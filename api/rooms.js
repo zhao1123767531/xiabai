@@ -176,8 +176,8 @@ function visibleWord(room, playerId) {
 
 function visibleRoles(room, playerId) {
   const roles = {};
-  const honestId = Object.keys(room.roles || {}).find((id) => room.roles[id] === "honest");
-  if (honestId) roles[honestId] = "honest";
+  const smartId = Object.keys(room.roles || {}).find((id) => room.roles[id] === "smart");
+  if (smartId) roles[smartId] = "smart";
   if (room.roles && room.roles[playerId]) roles[playerId] = room.roles[playerId];
   if (room.phase === "reveal") return { ...room.roles };
   return roles;
@@ -308,8 +308,8 @@ async function mutate(action, body) {
   } else if (action === "viewDef") {
     room.defUsed = { ...(room.defUsed || {}), [playerId]: true };
   } else if (action === "changeWord") {
-    if (room.phase !== "discuss" || room.roles[playerId] !== "honest") {
-      throw Object.assign(new Error("只有老实人可以在讨论阶段换题"), { statusCode: 403 });
+    if (room.phase !== "discuss" || room.roles[playerId] !== "smart") {
+      throw Object.assign(new Error("只有大聪明可以在讨论阶段换题"), { statusCode: 403 });
     }
     room.word = pickWord(room.word && room.word.w);
     room.defUsed = {};

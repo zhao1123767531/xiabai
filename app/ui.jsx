@@ -3,10 +3,10 @@ const { useState, useEffect, useRef } = React;
 
 /* —— 角色元数据 —— */
 const ROLES = {
-  honest: { key: "honest", label: "老实人", color: "var(--blue)",   chip: "chip-blue",   ring: "ring-blue",   tint: "var(--blue-tint)",   public: true,
+  honest: { key: "honest", label: "老实人", color: "var(--blue)",   chip: "chip-blue",   ring: "ring-blue",   tint: "var(--blue-tint)",   public: false,
             blurb: "你知道这个词的真正意思。讨论时可以选择老实交代，也可以适当藏拙。" },
-  smart:  { key: "smart",  label: "大聪明", color: "var(--orange)", chip: "chip-orange", ring: "ring-orange", tint: "var(--orange-tint)", public: false,
-            blurb: "你并不知道词义。听大家一通胡侃，最后押一个你认为「最可信」的人。" },
+  smart:  { key: "smart",  label: "大聪明", color: "var(--orange)", chip: "chip-orange", ring: "ring-orange", tint: "var(--orange-tint)", public: true,
+            blurb: "你的身份公开。你并不知道词义，可以换题，最后押一个你认为「最可信」的人。" },
   bull:   { key: "bull",   label: "瞎掰人", color: "var(--red)",    chip: "chip-red",    ring: "ring-red",    tint: "var(--red-tint)",    public: false,
             blurb: "你也不知道词义。尽情瞎掰，把大聪明忽悠到来押你，你就赢了。" },
 };

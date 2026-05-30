@@ -26,7 +26,7 @@ function GameScreen({ app }) {
         {demoMode ? (
           <ViewSwitcher app={app} />
         ) : (
-          <span className="muted" style={{ fontSize: 13 }}>仅显示你的信息</span>
+          <span className="muted topbar-note">公开大聪明 · 仅显示你的身份</span>
         )}
         <div className="row" style={{ gap: 8 }}>
           <SoundToggle style={{ width: 38, height: 38, fontSize: 16 }} />
@@ -76,7 +76,7 @@ function DealPhase({ app, me, myRole }) {
             <div className="avatar" style={{ width: 76, height: 76, background: r.color, fontSize: 0 }} />
             <div className="display" style={{ fontSize: 40, color: r.color, WebkitTextStroke: "1.2px var(--ink)" }}>{r.label}</div>
             <p style={{ fontSize: 14, lineHeight: 1.55, color: "var(--ink)", margin: 0, textAlign: "center" }}>{r.blurb}</p>
-            {r.public && <span className="role-chip chip-blue" style={{ fontSize: 12 }}>身份公开</span>}
+            {r.public && <span className={"role-chip " + r.chip} style={{ fontSize: 12 }}>身份公开</span>}
           </div>
         )}
       </div>
@@ -97,7 +97,7 @@ function DiscussPhase({ app, me, myRole }) {
   const [confirmChange, setConfirmChange] = useState(false);
   const r = ROLES[myRole];
   const isHost = me.isHost;
-  const isHonest = myRole === "honest";
+  const isSmart = myRole === "smart";
   const used = app.defUsed[app.myId];
   const changeTopic = () => {
     app.changeWord();
@@ -116,11 +116,11 @@ function DiscussPhase({ app, me, myRole }) {
         <DirectionChips word={app.word} />
       </div>
 
-      <div style={{ display: "grid", gridTemplateColumns: isHonest ? "1fr 1fr" : "1fr", gap: 10, width: "100%", marginTop: 4 }}>
+      <div className="action-grid" style={{ gridTemplateColumns: isSmart ? "1fr 1fr" : "1fr" }}>
         <Btn kind={used ? "ghost" : "blue"} disabled={used} onClick={() => setShowDef(true)} style={{ minWidth: 0, paddingLeft: 12, paddingRight: 12, fontSize: 18 }}>
           {used ? "本轮已查看过" : "👁 查看释义"}
         </Btn>
-        {isHonest && (
+        {isSmart && (
           <Btn kind="yellow" onClick={() => setConfirmChange(true)} style={{ minWidth: 0, paddingLeft: 12, paddingRight: 12, fontSize: 18 }}>
             ↻ 换题
           </Btn>
@@ -238,14 +238,14 @@ function DefModal({ app, myRole, onClose }) {
   );
 }
 
-/* —— 玩家环（讨论时只显示老实人颜色，其余隐藏） —— */
+/* —— 玩家环（讨论时只显示大聪明颜色，其余隐藏） —— */
 function PlayerRing({ app, pickMode = false, pickId = null, onPick = null }) {
   return (
     <div style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 12, width: "100%" }}>
       {app.players.map((p) => {
         const role = app.roles[p.id];
         const revealed = app.phase === "reveal";
-        const showColor = revealed || (role === "honest"); // 老实人公开
+        const showColor = revealed || (role === "smart"); // 大聪明公开
         const ring = showColor ? ROLES[role].ring : "";
         const picked = pickId === p.id;
         const self = p.id === app.myId;

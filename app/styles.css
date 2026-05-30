@@ -124,8 +124,11 @@ h1, h2, h3 { font-family: var(--font-display); font-weight: 400; margin: 0; }
   transition: transform .08s ease, box-shadow .08s ease, filter .12s;
   display: inline-flex; align-items: center; justify-content: center; gap: 10px;
   width: 100%;
+  min-width: 0;
   user-select: none;
-  white-space: nowrap;
+  white-space: normal;
+  text-align: center;
+  line-height: 1.12;
 }
 .btn:active { transform: translate(4px,4px); box-shadow: 1px 1px 0 var(--ink); }
 .btn:disabled { opacity: .45; cursor: not-allowed; box-shadow: var(--shadow); transform: none; filter: grayscale(.4); }
@@ -135,7 +138,7 @@ h1, h2, h3 { font-family: var(--font-display); font-weight: 400; margin: 0; }
 .btn-red    { background: var(--red);    color: #fff; }
 .btn-yellow { background: var(--yellow); color: var(--ink); }
 .btn-ink    { background: var(--ink);    color: #fff; }
-.btn-sm { font-size: 16px; min-height: 44px; padding: 8px 16px; box-shadow: var(--shadow-sm); width: auto; }
+.btn-sm { font-size: 16px; min-height: 44px; padding: 8px 16px; box-shadow: var(--shadow-sm); width: auto; white-space: nowrap; }
 .btn-ghost { background: var(--card); }
 
 /* ---------- 卡片 ---------- */
@@ -185,11 +188,14 @@ h1, h2, h3 { font-family: var(--font-display); font-weight: 400; margin: 0; }
 /* ---------- 顶栏 ---------- */
 .topbar {
   display: flex; align-items: center; justify-content: space-between;
+  gap: 10px;
   padding: 16px 18px;
   border-bottom: var(--line);
   background: var(--card);
   position: sticky; top: 0; z-index: 5;
 }
+.topbar > * { min-width: 0; }
+.topbar-note { flex: 1; font-size: 13px; line-height: 1.25; text-align: center; }
 
 /* ---------- 实用 ---------- */
 .row { display: flex; align-items: center; gap: 12px; }
@@ -208,6 +214,19 @@ h1, h2, h3 { font-family: var(--font-display); font-weight: 400; margin: 0; }
   background: linear-gradient(to top, var(--paper) 72%, transparent);
   display: flex; flex-direction: column; gap: 10px;
   z-index: 8;
+}
+.dock .btn { width: 100%; }
+.action-grid {
+  display: grid;
+  gap: 10px;
+  width: 100%;
+  margin-top: 4px;
+}
+@media (max-width: 360px) {
+  .topbar { padding: 12px 12px; gap: 6px; }
+  .topbar .btn-sm { padding-left: 12px; padding-right: 12px; }
+  .screen-pad { padding-left: 16px; padding-right: 16px; }
+  .action-grid { grid-template-columns: 1fr !important; }
 }
 
 /* ---------- 视角切换浮钮 ---------- */
