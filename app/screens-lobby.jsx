@@ -163,16 +163,16 @@ function LobbyScreen({ app }) {
           <div className="muted" style={{ fontSize: 13, marginTop: 6, lineHeight: 1.6 }}>
             1 名 <b style={{ color: "var(--blue)" }}>老实人</b> · 1 名 <b style={{ color: "var(--orange)" }}>大聪明</b> · 其余 {Math.max(0, players.length - 2)} 名 <b style={{ color: "var(--red)" }}>瞎掰人</b>
           </div>
-          {!demoMode && (
-            <div className="muted" style={{ fontSize: 12, marginTop: 6 }}>当前为正式界面预览：真实玩家加入需要后端房间服务。</div>
+          {!demoMode && app.syncError && (
+            <div className="muted" style={{ fontSize: 12, marginTop: 6, color: "var(--red-deep)" }}>{app.syncError}</div>
           )}
         </div>
       </div>
 
       <div className="dock">
         {isHost ? (
-          <Btn kind="red" disabled={!enough} onClick={app.startGame} style={{ fontSize: 24, minHeight: 62 }}>
-            {enough ? "开始游戏 ▶" : `还差 ${minPlayers - players.length} 人`}
+          <Btn kind="red" disabled={!enough || app.loading} onClick={app.startGame} style={{ fontSize: 24, minHeight: 62 }}>
+            {app.loading ? "处理中…" : enough ? "开始游戏 ▶" : `还差 ${minPlayers - players.length} 人`}
           </Btn>
         ) : (
           <Btn kind="ghost" disabled style={{ fontSize: 20 }}>等待房主「{host ? host.name : ""}」开始…</Btn>

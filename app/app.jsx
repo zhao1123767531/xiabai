@@ -37,7 +37,36 @@ function pickWord(lastW) {
   return pool[Math.floor(Math.random() * pool.length)];
 }
 
+function savedName() {
+  return localStorage.getItem("xbw_name") || "";
+}
+
+function askName() {
+  const name = (window.prompt("输入你的昵称", savedName() || pickName([])) || "").trim().slice(0, 12);
+  if (name) localStorage.setItem("xbw_name", name);
+  return name || pickName([]);
+}
+
+async function roomApi(action, body = {}) {
+  const response = await fetch("/api/rooms", {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify({ action, ...body }),
+  });
+  const data = await response.json().catch(() => ({}));
+  if (!response.ok) throw new Error(data.error || "房间服务暂时不可用");
+  return data;
+}
+
+async function roomState(code, playerId) {
+  const response = await fetch(`/api/rooms?code=${encodeURIComponent(code)}&playerId=${encodeURIComponent(playerId)}`);
+  const data = await response.json().catch(() => ({}));
+  if (!response.ok) throw new Error(data.error || "房间同步失败");
+  return data;
+}
+
 function App() {
+  const remoteMode = !cfg().demoMode;
   const [S, setS] = useState({
     screen: "home",      // home | lobby | game
     showJoin: false,
@@ -51,11 +80,53 @@ function App() {
     roles: {},
     defUsed: {},
     lastResult: null,
+    loading: false,
+    syncError: "",
   });
   const patch = (o) => setS((s) => ({ ...s, ...o }));
+  const applyRoom = (data) => setS((s) => ({
+    ...s,
+    ...data,
+    screen: data.phase === "lobby" ? "lobby" : "game",
+    showJoin: false,
+    syncError: "",
+    loading: false,
+  }));
+  const fail = (err) => {
+    const message = err && err.message ? err.message : "操作失败";
+    patch({ loading: false, syncError: message });
+    window.alert(message);
+  };
+
+  useEffect(() => {
+    if (!remoteMode || !S.room.code || !S.myId || S.screen === "home") return;
+    let alive = true;
+    const sync = async () => {
+      try {
+        const data = await roomState(S.room.code, S.myId);
+        if (alive) applyRoom(data);
+      } catch (err) {
+        if (!alive) return;
+        if (String(err.message || "").includes("不在这个房间")) {
+          window.alert("你已离开房间或被房主请出。");
+          patch({ screen: "home", players: [], myId: null, room: { code: "" }, syncError: "" });
+        } else {
+          patch({ syncError: err.message || "房间同步失败" });
+        }
+      }
+    };
+    const t = setInterval(sync, 1300);
+    return () => { alive = false; clearInterval(t); };
+  }, [remoteMode, S.room.code, S.myId, S.screen]);
 
   /* ---- 房间 ---- */
-  const createRoom = () => {
+  const createRoom = async () => {
+    if (remoteMode) {
+      patch({ loading: true });
+      try { applyRoom(await roomApi("create", { name: askName() })); }
+      catch (err) { fail(err); }
+      return;
+    }
     const me = makePlayer([], 0, { isHost: true, isBot: false });
     patch({ screen: "lobby", room: { code: randCode() }, players: [me], myId: me.id,
       round: 0, phase: "lobby", roles: {}, defUsed: {}, lastResult: null });
@@ -76,7 +147,13 @@ function App() {
   const openAdmin = () => patch({ showAdmin: true });
   const closeAdmin = () => patch({ showAdmin: false });
 
-  const joinRoom = (code) => {
+  const joinRoom = async (code) => {
+    if (remoteMode) {
+      patch({ loading: true });
+      try { applyRoom(await roomApi("join", { code, name: askName() })); }
+      catch (err) { fail(err); }
+      return;
+    }
     // 模拟一个已有房间：房主 + 几名玩家，我作为访客加入
     const players = [];
     const host = makePlayer([], 0, { isHost: true, isBot: true });
@@ -88,33 +165,88 @@ function App() {
       round: 0, phase: "lobby", roles: {}, defUsed: {}, lastResult: null });
   };
 
-  const kick = (id) => setS((s) => ({ ...s, players: s.players.filter((p) => p.id !== id) }));
+  const kick = async (id) => {
+    if (remoteMode) {
+      try { applyRoom(await roomApi("kick", { code: S.room.code, playerId: S.myId, targetId: id })); }
+      catch (err) { fail(err); }
+      return;
+    }
+    setS((s) => ({ ...s, players: s.players.filter((p) => p.id !== id) }));
+  };
   const addBot = () => setS((s) => {
     if (!cfg().demoMode || s.players.length >= cfg().maxPlayers) return s;
     const used = s.players.map((p) => p.name);
     return { ...s, players: [...s.players, makePlayer(used, s.players.length, { isBot: true })] };
   });
 
-  const leave = () => patch({ screen: "home", players: [], myId: null, round: 0, phase: "lobby",
-    roles: {}, defUsed: {}, lastResult: null, room: { code: "" } });
+  const leave = async () => {
+    const code = S.room.code, playerId = S.myId;
+    patch({ screen: "home", players: [], myId: null, round: 0, phase: "lobby",
+      roles: {}, defUsed: {}, lastResult: null, room: { code: "" } });
+    if (remoteMode && code && playerId) {
+      roomApi("leave", { code, playerId }).catch(() => {});
+    }
+  };
 
   /* ---- 开局 ---- */
-  const startGame = () => setS((s) => {
+  const startGame = async () => {
+    if (remoteMode) {
+      patch({ loading: true });
+      try { window.SFX && SFX.start(); applyRoom(await roomApi("start", { code: S.room.code, playerId: S.myId })); }
+      catch (err) { fail(err); }
+      return;
+    }
+    setS((s) => {
     if (s.players.length < cfg().minPlayers) return s;
     window.SFX && SFX.start();
     return { ...s, screen: "game", phase: "dealing", round: 1,
       roles: assignRoles(s.players), word: pickWord(""), defUsed: {}, lastResult: null,
       players: s.players.map((p) => ({ ...p, score: 0 })) };
-  });
+    });
+  };
 
   const setViewpoint = (id) => patch({ myId: id });
-  const startDiscuss = () => patch({ phase: "discuss", defUsed: {} });
-  const markDefUsed = () => setS((s) => ({ ...s, defUsed: { ...s.defUsed, [s.myId]: true } }));
-  const changeWord = () => setS((s) => ({ ...s, word: pickWord(s.word.w), defUsed: {} }));
-  const startVerify = () => patch({ phase: "verify" });
+  const startDiscuss = async () => {
+    if (remoteMode) {
+      try { applyRoom(await roomApi("discuss", { code: S.room.code, playerId: S.myId })); }
+      catch (err) { fail(err); }
+      return;
+    }
+    patch({ phase: "discuss", defUsed: {} });
+  };
+  const markDefUsed = async () => {
+    if (remoteMode) {
+      try { applyRoom(await roomApi("viewDef", { code: S.room.code, playerId: S.myId })); }
+      catch (err) { patch({ syncError: err.message || "释义状态同步失败" }); }
+      return;
+    }
+    setS((s) => ({ ...s, defUsed: { ...s.defUsed, [s.myId]: true } }));
+  };
+  const changeWord = async () => {
+    if (remoteMode) {
+      try { applyRoom(await roomApi("changeWord", { code: S.room.code, playerId: S.myId })); }
+      catch (err) { fail(err); }
+      return;
+    }
+    setS((s) => ({ ...s, word: pickWord(s.word.w), defUsed: {} }));
+  };
+  const startVerify = async () => {
+    if (remoteMode) {
+      try { applyRoom(await roomApi("verifyPhase", { code: S.room.code, playerId: S.myId })); }
+      catch (err) { fail(err); }
+      return;
+    }
+    patch({ phase: "verify" });
+  };
 
   /* ---- 验证 + 记分 ---- */
-  const verify = (pickId) => setS((s) => {
+  const verify = async (pickId) => {
+    if (remoteMode) {
+      try { applyRoom(await roomApi("verify", { code: S.room.code, playerId: S.myId, pickId })); }
+      catch (err) { fail(err); }
+      return;
+    }
+    setS((s) => {
     const smartId = Object.keys(s.roles).find((id) => s.roles[id] === "smart");
     const honestId = Object.keys(s.roles).find((id) => s.roles[id] === "honest");
     const pickedRole = s.roles[pickId];
@@ -131,10 +263,18 @@ function App() {
     window.SFX && (outcome === "smart-honest" ? SFX.win() : SFX.lose());
     return { ...s, phase: "reveal", players,
       lastResult: { smartId, honestId, pickId, pickedRole, outcome, gains } };
-  });
+    });
+  };
 
-  const nextRound = () => setS((s) => ({ ...s, phase: "dealing", round: s.round + 1,
-    roles: assignRoles(s.players), word: pickWord(s.word.w), defUsed: {}, lastResult: null }));
+  const nextRound = async () => {
+    if (remoteMode) {
+      try { applyRoom(await roomApi("next", { code: S.room.code, playerId: S.myId })); }
+      catch (err) { fail(err); }
+      return;
+    }
+    setS((s) => ({ ...s, phase: "dealing", round: s.round + 1,
+      roles: assignRoles(s.players), word: pickWord(s.word.w), defUsed: {}, lastResult: null }));
+  };
 
   const app = { ...S, createRoom, openJoin, closeJoin, joinRoom, kick, addBot, leave,
     startGame, setViewpoint, startDiscuss, markDefUsed, changeWord, startVerify, verify, nextRound,

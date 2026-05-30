@@ -7,6 +7,18 @@ function GameScreen({ app }) {
   const myRole = app.roles[app.myId];
   const demoMode = !!(window.XBW_CONFIG && XBW_CONFIG.demoMode);
 
+  if (!me || !myRole) {
+    return (
+      <div className="screen">
+        <div className="screen-pad center" style={{ flex: 1, textAlign: "center", gap: 12 }}>
+          <div className="display spin" style={{ fontSize: 42 }}>◔</div>
+          <h2 style={{ fontSize: 24 }}>正在同步房间…</h2>
+          {app.syncError && <p className="muted" style={{ color: "var(--red-deep)", fontSize: 14 }}>{app.syncError}</p>}
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="screen">
       <div className="topbar">
@@ -266,9 +278,9 @@ function VerifyPhase({ app, me, myRole }) {
       <div className="screen-pad center" style={{ flex: 1, gap: 18, textAlign: "center" }}>
         <MyRoleBanner role={myRole} />
         <div className="display floaty" style={{ fontSize: 56 }}><span className="spin" style={{ display: "inline-block" }}>◔</span></div>
-        <h2 style={{ fontSize: 24 }}>大聪明「{smart.name}」<br />正在做出选择…</h2>
+        <h2 style={{ fontSize: 24 }}>大聪明<br />正在做出选择…</h2>
         <p className="muted" style={{ fontSize: 14, maxWidth: 260 }}>TA 会押一个最可信的人。屏住呼吸，等待揭晓。</p>
-        {demoMode && (
+        {demoMode && smart && (
           <div className="dock">
             <Btn kind="ghost" onClick={() => app.setViewpoint(smart.id)}>切到大聪明视角去验证 →</Btn>
           </div>
