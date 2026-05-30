@@ -1,0 +1,295 @@
+/* ============================================================
+   瞎掰王 — 贴纸卡通设计系统
+   粗描边 / 硬阴影 / 糖果色 / 圆润字体
+   ============================================================ */
+
+:root {
+  /* 基础色 */
+  --ink: #241d16;
+  --ink-soft: #5b5046;
+  --paper: #fff4e0;
+  --paper-2: #ffe9bf;
+  --card: #fffdf8;
+
+  /* 角色主题色 */
+  --orange: #ff8a2b;   /* 大聪明 */
+  --orange-deep: #e36f10;
+  --orange-tint: #ffe6cc;
+  --blue: #2e8fff;     /* 老实人 */
+  --blue-deep: #1567d6;
+  --blue-tint: #d6e9ff;
+  --red: #ff4257;      /* 瞎掰人 */
+  --red-deep: #df1f3c;
+  --red-tint: #ffd9de;
+
+  /* 辅助 */
+  --yellow: #ffd23f;
+  --mint: #34d6a8;
+  --grape: #9b6bff;
+
+  /* 形 */
+  --line-w: 3px;
+  --line: var(--line-w) solid var(--ink);
+  --shadow: 5px 5px 0 var(--ink);
+  --shadow-sm: 3px 3px 0 var(--ink);
+  --shadow-lg: 8px 8px 0 var(--ink);
+  --radius: 24px;
+  --radius-sm: 16px;
+  --radius-pill: 999px;
+
+  --font-display: "ZCOOL KuaiLe", "PingFang SC", sans-serif;
+  --font-body: "Noto Sans SC", "PingFang SC", "Microsoft YaHei", sans-serif;
+}
+
+* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+html, body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  font-family: var(--font-body);
+  color: var(--ink);
+}
+
+body {
+  /* 舞台：糖果点点背景 */
+  background-color: #ffcf6b;
+  background-image:
+    radial-gradient(circle at center, rgba(36,29,22,.10) 2.5px, transparent 2.6px);
+  background-size: 26px 26px;
+  display: flex;
+  justify-content: center;
+  align-items: stretch;
+  min-height: 100dvh;
+}
+
+#root { width: 100%; display: flex; justify-content: center; }
+
+/* ---------- 手机外壳 ---------- */
+.phone {
+  position: relative;
+  width: 100%;
+  max-width: 412px;
+  min-height: 100dvh;
+  background: var(--paper);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 0 0 4px var(--ink), 14px 18px 0 rgba(36,29,22,.25);
+}
+@media (min-width: 460px) {
+  .phone {
+    min-height: 0;
+    height: calc(100dvh - 36px);
+    margin: 18px 0;
+    border-radius: 38px;
+  }
+}
+
+.screen {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  position: relative;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+.screen::-webkit-scrollbar { width: 0; }
+
+.screen-pad { padding: 22px 20px 120px; }
+
+/* ---------- 文字 ---------- */
+.display { font-family: var(--font-display); font-weight: 400; line-height: 1.1; }
+h1, h2, h3 { font-family: var(--font-display); font-weight: 400; margin: 0; }
+
+.eyebrow {
+  font-size: 13px; font-weight: 700; letter-spacing: .18em;
+  text-transform: uppercase; color: var(--ink-soft);
+  white-space: nowrap;
+}
+
+/* ---------- 按钮 ---------- */
+.btn {
+  font-family: var(--font-display);
+  font-size: 20px;
+  border: var(--line);
+  border-radius: var(--radius-pill);
+  background: var(--card);
+  color: var(--ink);
+  padding: 15px 22px;
+  min-height: 56px;
+  cursor: pointer;
+  box-shadow: var(--shadow);
+  transition: transform .08s ease, box-shadow .08s ease, filter .12s;
+  display: inline-flex; align-items: center; justify-content: center; gap: 10px;
+  width: 100%;
+  user-select: none;
+  white-space: nowrap;
+}
+.btn:active { transform: translate(4px,4px); box-shadow: 1px 1px 0 var(--ink); }
+.btn:disabled { opacity: .45; cursor: not-allowed; box-shadow: var(--shadow); transform: none; filter: grayscale(.4); }
+
+.btn-orange { background: var(--orange); color: #fff; }
+.btn-blue   { background: var(--blue);   color: #fff; }
+.btn-red    { background: var(--red);    color: #fff; }
+.btn-yellow { background: var(--yellow); color: var(--ink); }
+.btn-ink    { background: var(--ink);    color: #fff; }
+.btn-sm { font-size: 16px; min-height: 44px; padding: 8px 16px; box-shadow: var(--shadow-sm); width: auto; }
+.btn-ghost { background: var(--card); }
+
+/* ---------- 卡片 ---------- */
+.card {
+  background: var(--card);
+  border: var(--line);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 18px;
+}
+
+/* ---------- 头像 ---------- */
+.avatar {
+  position: relative;
+  border: var(--line);
+  border-radius: 50%;
+  display: grid; place-items: center;
+  font-family: var(--font-display);
+  color: #fff;
+  flex: none;
+  background: var(--grape);
+  box-shadow: var(--shadow-sm);
+}
+.avatar .crown-badge {
+  position: absolute; top: -14px; left: 50%; transform: translateX(-50%);
+}
+
+/* 角色描边光环 */
+.ring-orange { box-shadow: 0 0 0 4px var(--orange-tint), var(--shadow-sm); }
+.ring-blue   { box-shadow: 0 0 0 4px var(--blue-tint),   var(--shadow-sm); }
+.ring-red    { box-shadow: 0 0 0 4px var(--red-tint),    var(--shadow-sm); }
+
+/* ---------- 角色徽标条 ---------- */
+.role-chip {
+  display: inline-flex; align-items: center; gap: 7px;
+  font-family: var(--font-display);
+  border: var(--line); border-radius: var(--radius-pill);
+  padding: 5px 14px; font-size: 15px; color: #fff;
+  box-shadow: var(--shadow-sm);
+  white-space: nowrap;
+}
+.chip-orange { background: var(--orange); }
+.chip-blue   { background: var(--blue); }
+.chip-red    { background: var(--red); }
+.chip-hidden { background: #cdbfa8; color: var(--ink); }
+
+/* ---------- 顶栏 ---------- */
+.topbar {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 16px 18px;
+  border-bottom: var(--line);
+  background: var(--card);
+  position: sticky; top: 0; z-index: 5;
+}
+
+/* ---------- 实用 ---------- */
+.row { display: flex; align-items: center; gap: 12px; }
+.col { display: flex; flex-direction: column; }
+.center { display: grid; place-items: center; }
+.tilt-l { transform: none; }
+.tilt-r { transform: none; }
+.grow { flex: 1; }
+.muted { color: var(--ink-soft); }
+.tac { text-align: center; }
+
+/* 浮层底部主行动按钮 */
+.dock {
+  position: absolute; left: 0; right: 0; bottom: 0;
+  padding: 16px 20px calc(16px + env(safe-area-inset-bottom));
+  background: linear-gradient(to top, var(--paper) 72%, transparent);
+  display: flex; flex-direction: column; gap: 10px;
+  z-index: 8;
+}
+
+/* ---------- 视角切换浮钮 ---------- */
+.viewfab {
+  position: absolute; right: 14px; bottom: 92px; z-index: 30;
+  width: auto;
+}
+.view-sheet-back {
+  position: absolute; inset: 0; z-index: 40;
+  background: rgba(36,29,22,.45);
+  display: flex; align-items: flex-end;
+  animation: fade .15s ease;
+}
+.view-sheet {
+  width: 100%; background: var(--paper);
+  border-top: var(--line); border-radius: 28px 28px 0 0;
+  padding: 18px 18px calc(20px + env(safe-area-inset-bottom));
+  box-shadow: 0 -6px 0 rgba(36,29,22,.15);
+  animation: slideup .22s cubic-bezier(.2,.9,.3,1.2);
+  max-height: 70%; overflow-y: auto;
+}
+.view-row {
+  display: flex; align-items: center; gap: 12px;
+  border: var(--line); border-radius: var(--radius-sm);
+  background: var(--card); padding: 10px 12px; margin-bottom: 10px;
+  box-shadow: var(--shadow-sm); cursor: pointer;
+}
+.view-row.active { background: var(--yellow); }
+
+/* ---------- 弹窗 ---------- */
+.modal-back {
+  position: absolute; inset: 0; z-index: 50;
+  background: rgba(36,29,22,.5);
+  display: grid; place-items: center; padding: 24px;
+}
+.modal {
+  width: 100%; max-width: 360px; background: var(--card);
+  border: var(--line); border-radius: var(--radius);
+  box-shadow: var(--shadow-lg);
+  padding: 24px; animation: pop .26s cubic-bezier(.2,.9,.3,1.4);
+}
+
+/* ---------- 输入 ---------- */
+.code-input {
+  font-family: var(--font-display);
+  font-size: 34px; letter-spacing: .35em; text-align: center;
+  border: var(--line); border-radius: var(--radius-sm);
+  padding: 14px 10px 14px 18px; width: 100%;
+  background: var(--paper); color: var(--ink);
+  box-shadow: inset 2px 2px 0 rgba(36,29,22,.12);
+}
+.code-input:focus { outline: none; background: #fff; }
+
+/* ---------- 动画 ---------- */
+@keyframes fade { from { opacity: 0; } to { opacity: 1; } }
+@keyframes pop { 0% { transform: scale(.82); opacity: 1; } 60% { transform: scale(1.04); } 100% { transform: scale(1); opacity: 1; } }
+@keyframes slideup { from { transform: translateY(100%); } to { transform: translateY(0); } }
+@keyframes floaty { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-9px); } }
+@keyframes wiggle { 0%,100% { transform: scale(1); } 50% { transform: scale(1.12); } }
+@keyframes pulse-ring { 0% { box-shadow: 0 0 0 0 rgba(255,210,63,.7); } 100% { box-shadow: 0 0 0 16px rgba(255,210,63,0); } }
+@keyframes spin { to { transform: rotate(360deg); } }
+@keyframes confetti-fall {
+  0% { transform: translateY(-20px) rotate(0); opacity: 1; }
+  100% { transform: translateY(120vh) rotate(720deg); opacity: 1; }
+}
+@keyframes cardflip { 0% { transform: rotateY(0); } 100% { transform: rotateY(180deg); } }
+@keyframes scorepop { 0% { transform: scale(0) rotate(-20deg); opacity: 0; } 60% { transform: scale(1.25) rotate(6deg); } 100% { transform: scale(1) rotate(0); opacity: 1; } }
+@keyframes cardreveal { 0% { transform: scale(.6) rotate(-10deg); opacity: 1; } 55% { transform: scale(1.1) rotate(5deg); } 100% { transform: scale(1) rotate(0); opacity: 1; } }
+@keyframes shake { 0%,100% { transform: translateX(0); } 20% { transform: translateX(-9px); } 40% { transform: translateX(8px); } 60% { transform: translateX(-6px); } 80% { transform: translateX(4px); } }
+
+.floaty { animation: floaty 3.4s ease-in-out infinite; }
+.wiggle { animation: wiggle .5s ease-in-out infinite; }
+.spin { animation: spin 1s linear infinite; }
+
+/* 倒计时圆环 */
+.ring-timer { transform: rotate(-90deg); }
+.ring-timer circle { fill: none; stroke-linecap: round; }
+
+/* 选中态 */
+.pickable { cursor: pointer; transition: transform .1s; }
+.pickable:active { transform: scale(.94); }
+.picked-glow { animation: pulse-ring 1.1s ease-out infinite; }
+
+/* confetti piece */
+.confetti-piece { position: absolute; top: 0; width: 11px; height: 16px; border: 2px solid var(--ink); border-radius: 3px; }
